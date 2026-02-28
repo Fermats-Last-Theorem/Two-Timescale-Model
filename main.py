@@ -1,29 +1,35 @@
-from algorithms.gtd0 import GTD0
-from envs.simple_mdp import SimpleMDP
-from utils.logger import Logger
-from utils.plots import plot_results
+import numpy as np
+from algorithms.gtd0 import GTD
+from envs.simple_mdp import MDP
+from utils.logger import Log
+from utils.plots import plt_err
 
-def main():
-    # Initialize environment and data sampler
-    mdp = SimpleMDP()
+def get_th_star(d, g):
+    P=np.array([[0,0.5,0],[0.5,0,0.5],[0,0.5,0]])
+    R=np.array([-0.5,0,0.5])
     
-    # Initialize GTD(0)
-    gtd0 = GTD0(mdp.feature_dim)
+    I=np.eye(3)
+    V=np.linalg.inv(I-g*P).dot(R)
     
-    # Initialize logger
-    logger = Logger()
+    th_star=np.zeros(d)
+    th_star[1:4]=V
+    return th_star
+
+def run():
+    m=MDP()
+    g=GTD(m.d)
+    l=Log()
     
-    # Run the algorithm
-    num_iters = 10000
-    for n in range(1, num_iters + 1):
-        phi, phi_next, reward = mdp.sample_transition()
-        gtd0.update(phi, phi_next, reward, n)
+    th_star = get_th_star(m.d, m.g)
+    
+    for i in range(1, 50001):
+        u,v,r=m.smp()
+        g.upd(u,v,r,i,m.g)
         
-        if n % 100 == 0:
-            logger.log(n, gtd0.get_theta(), gtd0.get_w())
-    
-    # Plot the results
-    plot_results(logger.records)
+        if i%100==0:
+            l.lg(i,g.th,g.w)
+            
+    plt_err(l.r, th_star)
 
-if __name__ == "__main__":
-    main()
+if __name__=="__main__":
+    run()

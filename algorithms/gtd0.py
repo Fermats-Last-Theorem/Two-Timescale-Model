@@ -1,24 +1,21 @@
 import numpy as np
-from .base_sa import TwoTimescaleSA
-from .projection import sparse_project
+from .base import SA
+from .projection import proj
 
-class GTD0(TwoTimescaleSA):
-    def __init__(self, feature_dim):
-        super().__init__(feature_dim)
-        self.A = np.eye(feature_dim)  # Placeholder
-        self.b = np.zeros(feature_dim)  # Placeholder
-    
-    def update(self, phi, phi_next, reward, n):
-        alpha = self.alpha_n(n)
-        beta = self.beta_n(n)
+class GTD(SA):
+    def __init__(s, d):
+        super().__init__(d)
+        s.A = np.eye(d)
+        s.b = np.zeros(d)
         
-        # Update w
-        delta = reward + np.dot(self.theta, phi_next) - np.dot(self.theta, phi)
-        self.w += beta * (delta * phi - self.w)
-        
-        # Update theta
-        self.theta += alpha * (phi - phi_next) * np.dot(phi, self.w)
-        
-        # Sparse projection (if needed)
-        self.theta = sparse_project(self.theta, n)
-        self.w = sparse_project(self.w, n)
+    def upd(s, u, v, r, n, gamma):
+            a=s.an(n)
+            b=s.bn(n)
+            
+            dl = r + gamma * np.dot(s.th, v) - np.dot(s.th, u)
+            s.w += b * (dl * u - s.w)
+            
+            s.th += a * (u - gamma * v) * np.dot(u, s.w)
+            
+            s.th = proj(s.th,n)
+            s.w = proj(s.w,n)

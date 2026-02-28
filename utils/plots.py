@@ -1,14 +1,19 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
-def plot_results(records):
-    iterations = [r['iteration'] for r in records]
-    theta_norms = [np.linalg.norm(r['theta']) for r in records]
-    w_norms = [np.linalg.norm(r['w']) for r in records]
+def plt_err(r, th_star, ws=50):
+    x=[k['n'] for k in r]
     
-    plt.plot(iterations, theta_norms, label='||theta||')
-    plt.plot(iterations, w_norms, label='||w||')
-    plt.xlabel('Iteration')
-    plt.ylabel('Norm')
+    
+    err=[np.linalg.norm(k['t'] - th_star) for k in r]
+    w=[np.linalg.norm(k['w']) for k in r]
+    
+    err_s=np.convolve(err, np.ones(ws)/ws, 'valid')
+    ws_=np.convolve(w, np.ones(ws)/ws, 'valid')
+    xs=x[:len(err_s)]
+    
+    plt.plot(xs, err_s, label='||th - th*||')
+    plt.plot(xs, ws_, label='||w||')
+    plt.yscale('log')
     plt.legend()
-    plt.title('Two-Timescale RL Convergence')
     plt.show()
