@@ -1,2 +1,2 @@
-# Two-Timescale-Model
-Two Timescale Actor Critic RL model
+## Two-Timescale-Model
+Two-Timescale Actor Critic RL model
